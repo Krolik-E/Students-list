@@ -3,8 +3,9 @@
 	var studentsList;
 
 	function Student(options) {
+		debugger;
 		this.name = options.name || '';
-		this.date = options.date || (moment().format("DD-MM-YYYY"));
+		this.date = moment(options.date, 'YYYY-MM-DD') || moment();
 		this.age = options.age || 0
 		this.mark = options.mark || 0;
 	};
@@ -26,6 +27,7 @@
 	};
 
 	function getStudentInfo () {
+		debugger;
 		var info = {
 			name: String(window.document.querySelector('#stud-name').value),
 			mark: window.document.querySelector('#stud-mark').value,
@@ -34,10 +36,10 @@
 		};
 
 		if (validateInfo(info)){
-			addStudent(options);
+			addStudent(info);
 			clearInfo();
 		} else {
-			var errortype = validateInfo(options);
+			var errortype = validateInfo(info);
 		};
 
 	};
@@ -73,7 +75,7 @@
 	};
 
 	function createTR(stud, i) {
-		
+		debugger;
 		// Create table row
 		var TR = window.document.createElement('tr');
 		TR.setAttribute('data-index', i);
@@ -91,12 +93,19 @@
 			if (key === 'name') {var type = 'text'}
 			else if (key === 'date') {var type = key}
 			else {var type = 'number'};
-
-			info.textContent = stud[key];
+			if (key === 'date') {
+				info.textContent = moment(stud[key]).format('DD-MM-YYYY');
+			} else {
+				info.textContent = stud[key];
+			}
 
 			input.setAttribute('class', 'onEdit-' + key + '-' + i + ' hide');
 			input.type = type;
-			input.value = stud[key];
+			if (key === 'date') {
+				input.value = moment(stud[key]).format('YYYY-MM-DD');
+			} else {
+				input.value = stud[key];
+			}
 
 			TD.appendChild(info);
 			TD.appendChild(input);
@@ -181,7 +190,7 @@
 		var trEdit = window.document.querySelector('tr[data-index="' + index + '"]');
 		var optionNew = {
 			name: String(trEdit.querySelector('[class^="onEdit-name"]').value) || '',
-			date: trEdit.querySelector('[class^="onEdit-date"]').value || (moment().format("DD-MM-YYYY")),
+			date: moment(trEdit.querySelector('[class^="onEdit-date"]').value, 'YYYY-MM-DD') || moment(),
 			age: trEdit.querySelector('[class^="onEdit-age"]').value || 0,
 			mark: trEdit.querySelector('[class^="onEdit-mark"]').value || 0,
 		};
@@ -191,12 +200,13 @@
 			saveLocal(studentsList);
 			renderTable(studentsList);
 		} else {
-			var errortype = validateInfo(options);
+			var errortype = validateInfo(optionNew);
 		}
 	};
 
 	function sortArr(type) {
 		debugger;
+		studentsList = getList();
 		switch (type) {
 			case 'AZ':
 				studentsList.sort(sortTypes.sortAZ)
@@ -210,10 +220,10 @@
 			case 'RD':
 				studentsList.sort(sortTypes.sortRDate)
 				break
-			case 'AG':
+			case 'A':
 				studentsList.sort(sortTypes.sortAge)
 				break
-			case 'RAG':
+			case 'RA':
 				studentsList.sort(sortTypes.sortRAge)
 				break
 			case 'M':
@@ -240,8 +250,8 @@
 		},
 
 		'sortDate' : function sortDate(a, b) {
-			if (a.date > b.date) return 1;
-			if (a.date < b.date) return -1;
+			if (moment(a.date) > moment(b.date)) return 1;
+			if (moment(a.date) < moment(b.date)) return -1;
 		},
 
 		'sortRDate' : function sortRDate(a, b) {
@@ -297,18 +307,21 @@
 	window.document.querySelector('.stud-list').onclick = function(e) {
 		debugger;
 		e = e || window.event;
+
 		var target = e.target;
-		var parent = target.parentNode.parentNode.nodeName;
+		// If target is icon in the button target needs to be switched to button
+		if (target.nodeName === 'I') {
+			var target = e.target.parentNode;
+		};
+
+		var parent = target.parentNode.nodeName;
+
 		if (parent === 'TH') {
-			var sortType = target.getAttribute('data-type')
+			var sortType = target.getAttribute('data-type');
 			sortArr(sortType);
 		} else {
-			if (target.nodeName === 'BUTTON') {
-				var className = target.className;
-				var index = target.getAttribute('data-index');
-			} else {
-				var className = target.parentNode.className;
-				var index = target.parentNode.getAttribute('data-index');
+			var className = target.className;
+			var index = target.getAttribute('data-index');
 			};
 
 			if (className === 'edit-stud') {
@@ -320,7 +333,6 @@
 			};
 
 		};
-	};
 
 }());
 
